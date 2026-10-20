@@ -32,9 +32,9 @@ console.log(await coursesFor('00128'));
 //     { courseId: 'CS-347', title: 'Database System Concepts', grade: '10' } ]
 //   Grades on the Danish scale, because the query calls danish_grade.
 console.log(await coursesFor('70557'));                   // []
-// console.log(await studentsPerDepartment());
+console.log(await studentsPerDepartment());
 //   [ { deptName: 'Biology', students: 1 }, { deptName: 'Comp. Sci.', students: 4 }, ... ]
-// console.log(typeof (await studentsPerDepartment())[0].students);   // number
+console.log(typeof (await studentsPerDepartment())[0].students);   // number
 
 // --- Part B1: the transaction ---
 // console.log(await insertStudent(
