@@ -74,3 +74,16 @@ Number(...): new_total is numeric, and pg returns numerics as strings ("3"), so 
 Parameters: the five values go in as $1 to $5. The NULL for the INOUT slot is written directly in the SQL, as the comment shows.
 Transactions: you don’t need BEGIN/COMMIT here. The procedure runs as a single statement, so the insert and the update succeed or fail together. If the course doesn’t exist, the procedure raises an exception, and a missing student fails on the foreign key. In both cases nothing is changed, and the error reaches the caller.
 */
+
+
+
+/*
+TypeScript (B1): The logic sits with the rest of the code, so it is easy to read, test, debug and change in one deploy. 
+The cost is more round trips to the database, and any other program that writes to the database has to repeat the rule or can skip it.
+
+Stored procedure (B3): The rule runs inside the database in one call, so it applies to every client. 
+The cost is that the logic lives outside the main code, so it is harder to version, test and debug, and it is tied to PostgreSQL.
+
+My choice: I would keep the logic in TypeScript, as this course does, so there is one place to maintain it. The cost is that the database does not protect itself, because another client could add an enrolment without updating tot_cred.
+The routine has to be deployed to the database separately from the code, and the application fails if that step is forgotten.
+*/
