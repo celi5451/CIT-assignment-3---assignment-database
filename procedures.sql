@@ -45,15 +45,22 @@ $$;
 --
 --     DROP FUNCTION student_transcript(varchar);
 
+DROP FUNCTION IF EXISTS student_transcript(varchar);
+
 CREATE OR REPLACE FUNCTION student_transcript(p_id varchar)
 RETURNS TABLE (course_id varchar, title varchar, grade varchar)
 LANGUAGE plpgsql AS $$
 BEGIN
-  -- TODO: raise an exception when there is no such student
+  IF NOT EXISTS (SELECT 1 FROM student s WHERE s.id = p_id) THEN
+    RAISE EXCEPTION 'No student with id %', p_id;
+  END IF;
 
-  -- TODO: return the courses this student takes, with converted grades
-  --       RETURN QUERY SELECT ... ;
-  RETURN;
+  RETURN QUERY
+  SELECT c.course_id, c.title, danish_grade(t.grade)
+  FROM takes t
+  JOIN course c ON c.course_id = t.course_id
+  WHERE t.id = p_id
+  ORDER BY c.course_id;
 END;
 $$;
 
@@ -85,8 +92,18 @@ LANGUAGE plpgsql AS $$
 DECLARE
   v_credits numeric;
 BEGIN
-  -- TODO
-  NULL;
+  SELECT credits INTO v_credits FROM course WHERE course_id = p_course_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'No course with id %', p_course_id;
+  END IF;
+
+  INSERT INTO takes (id, course_id, sec_id, semester, year, grade)
+  VALUES (p_id, p_course_id, p_sec_id, p_semester, p_year, NULL);
+
+  UPDATE student
+  SET tot_cred = tot_cred + v_credits
+  WHERE id = p_id
+  RETURNING tot_cred INTO new_total;
 END;
 $$;
 

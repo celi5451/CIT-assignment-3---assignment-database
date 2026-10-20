@@ -20,8 +20,12 @@ export interface TranscriptRow {
  * here as a rejected promise. Let it travel on: this one throws.
  */
 export async function transcriptOf(studentId: string): Promise<TranscriptRow[]> {
-  // TODO
-  throw new Error('not implemented');
+  const result = await pool.query<TranscriptRow>(
+    `SELECT course_id AS "courseId", title, grade
+     FROM student_transcript($1)`,
+    [studentId]
+  );
+  return result.rows;
 }
 
 /**
@@ -34,8 +38,14 @@ export async function transcriptOf(studentId: string): Promise<TranscriptRow[]> 
  */
 export async function transcriptOrUndefined(
   studentId: string): Promise<TranscriptRow[] | undefined> {
-  // TODO
-  throw new Error('not implemented');
+  try {
+    return await transcriptOf(studentId);
+  } catch (err) {
+    if ((err as { code?: string }).code === 'P0001') {
+      return undefined;
+    }
+    throw err;
+  }
 }
 
 /**
@@ -51,6 +61,16 @@ export async function transcriptOrUndefined(
 export async function enrolWithProcedure(
   studentId: string, courseId: string, secId: string,
   semester: string, year: number): Promise<number> {
-  // TODO
-  throw new Error('not implemented');
+  const result = await pool.query<{ new_total: string }>(
+    `CALL enrol_student($1, $2, $3, $4, $5, NULL)`,
+    [studentId, courseId, secId, semester, year]
+  );
+  return Number(result.rows[0].new_total);
 }
+
+/*
+CALL with an INOUT parameter: PostgreSQL returns one row whose column is named after the INOUT parameter, here new_total. That’s why you read rows[0].new_total.
+Number(...): new_total is numeric, and pg returns numerics as strings ("3"), so the conversion gives a real number. This is the same reason as tot_cred::int in the queries, but here you can’t cast inside the SQL, because the value comes out of the procedure itself.
+Parameters: the five values go in as $1 to $5. The NULL for the INOUT slot is written directly in the SQL, as the comment shows.
+Transactions: you don’t need BEGIN/COMMIT here. The procedure runs as a single statement, so the insert and the update succeed or fail together. If the course doesn’t exist, the procedure raises an exception, and a missing student fails on the foreign key. In both cases nothing is changed, and the error reaches the caller.
+*/

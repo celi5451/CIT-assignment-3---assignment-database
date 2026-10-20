@@ -35,29 +35,29 @@ console.log(await coursesFor('70557'));                   // []
 console.log(await studentsPerDepartment());
 //   [ { deptName: 'Biology', students: 1 }, { deptName: 'Comp. Sci.', students: 4 }, ... ]
 console.log(typeof (await studentsPerDepartment())[0].students);   // number
+console.log(await insertStudent(
+  { id: '90000', name: 'Testperson', deptName: 'Music', totCred: 0 }));
+//   { id: '90000', name: 'Testperson', deptName: 'Music', totCred: 0 }
 
 // --- Part B1: the transaction ---
-// console.log(await insertStudent(
-//   { id: '90000', name: 'Testperson', deptName: 'Music', totCred: 0 }));
-//   { id: '90000', name: 'Testperson', deptName: 'Music', totCred: 0 }
-// console.log(await enrolInTypeScript(
-//   { studentId: '90000', courseId: 'MU-199', secId: '1', semester: 'Spring', year: 2018 }));
+console.log(await enrolInTypeScript(
+  { studentId: '90000', courseId: 'MU-199', secId: '1', semester: 'Spring', year: 2018 }));
 //   3   (the credits of MU-199)
 
 // --- Part B2 and B3: the routines in the database ---
 // First check that danish_grade, from the database exercises, is still there:
-// console.log((await pool.query(
-//   "SELECT danish_grade('A') AS a, danish_grade('C-') AS c, danish_grade(NULL) AS n")).rows[0]);
+console.log((await pool.query(
+  "SELECT danish_grade('A') AS a, danish_grade('C-') AS c, danish_grade(NULL) AS n")).rows[0]);
 //   { a: '12', c: '02', n: null }
-// console.log(await transcriptOf('00128'));
+console.log(await transcriptOf('00128'));
 //   two rows: CS-101 with 12, CS-347 with 10
-// console.log(await transcriptOrUndefined('99999'));        // undefined
-// try {
-//   await transcriptOf('99999');
-// } catch (err) {
-//   console.log('caught:', (err as Error).message);         // No student with id 99999
-// }
-// console.log(await enrolWithProcedure('90000', 'CS-101', '1', 'Fall', 2017));
+console.log(await transcriptOrUndefined('99999'));        // undefined
+try {
+  await transcriptOf('99999');
+} catch (err) {
+  console.log('caught:', (err as Error).message);         // No student with id 99999
+}
+console.log(await enrolWithProcedure('90000', 'CS-101', '1', 'Fall', 2017));
 //   7   (3 from before, plus the 4 credits of CS-101)
 
 // --- Part C ---
